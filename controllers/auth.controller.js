@@ -3,25 +3,34 @@ import bcrypt from "bcryptjs";
 import generateTokenAndCookie from "../utils/generateToken.js";
 
 
-export const login= async(req,res)=>{
-try {
-    const {username, password} = req.body;
-    const user = await User.findOne({username});
-    const isPasswordCorrect = await bcrypt.compare(password, user.password || "");
-    if(user && isPasswordCorrect){
-        generateTokenAndCookie(user._id, res)
-        res.status(200).json({message: "User logged in successfully", user})
-    }else{
-        res.status(400).json({message: "Invalid username or password"})
+export const login = async (req, res) => {
+    try {
+      const { username, password } = req.body;
+      const user = await User.findOne({ username });
+  
+      // If user is not found, return an error response early
+      if (!user) {
+        return res.status(400).json({ message: "Invalid username or password" });
+      }
+  
+      // Compare password only if user exists
+      const isPasswordCorrect = await bcrypt.compare(password, user.password);
+  
+      if (isPasswordCorrect) {
+        generateTokenAndCookie(user._id, res);
+        res.status(200).json({ message: "User logged in successfully", user });
+      } else {
+        res.status(400).json({ message: "Invalid username or password" });
+      }
+    } catch (error) {
+      console.log("Error in login controller:", error.message);
+      res.status(500).json({ error: "Internal server error" });
     }
-} catch (error) {
-    console.log("error in login controller", error.message)
-    res.status(500).json({error: "internal server error"})
-} 
-}
+  };
+  
 export const register = async(req, res)=>{
     try {
-        const {fullName,gender,username, email, password,confirmPassword} = req.body;
+        const {fullName,gender,username, password,confirmPassword} = req.body;
         if(password !== confirmPassword){
             return res.status(400).json({message: "Passwords do not match"})
         }
@@ -41,7 +50,6 @@ export const register = async(req, res)=>{
         const newUser = new User({
             fullName,
             username,
-            email,
             password: hashedPassword,
             confirmPassword: hashedPassword,
             gender,

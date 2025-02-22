@@ -1,4 +1,5 @@
 import Conversation from "../models/conversation.js";
+import Message from "../models/message.js";
 
 export const sendMessage = async(req,res)=>{
   try {
@@ -34,20 +35,26 @@ export const sendMessage = async(req,res)=>{
   }
 }
 
-export const getMessages = async(req, res)=>{
+export const getMessages = async (req, res) => {
     try {
-        const {id: userToChatId} = req.params;
+        const { id: userToChatId } = req.params;
         const senderId = req.user._id;
 
+        // Find the conversation between the sender and the recipient
         const conversation = await Conversation.findOne({
-            participants: {$all: [senderId, userToChatId]}
-        }).populate("messages")
-        res.status(200).json(conversation.messages)
-        if(!conversation) return res.status(200).json([]);
+            participants: { $all: [senderId, userToChatId] }
+        }).populate("messages");
+
+        // If no conversation exists, return an empty array
+        if (!conversation) {
+            return res.status(200).json([]);
+        }
+
+        // Return the messages from the conversation
         const messages = conversation.messages;
-        res.status(200).json(messages)
+        res.status(200).json(messages);
     } catch (error) {
         console.log("Error in getMessages controller", error.message);
-        res.status(500).json({error: "internal server error"})
+        res.status(500).json({ error: "Internal server error" });
     }
-}
+};
