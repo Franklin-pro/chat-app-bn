@@ -3,8 +3,9 @@ import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 import router from './routes/index.js';
 import cookieParser from 'cookie-parser';
+import { app,server } from './routes/socket/socket.js';
 
-const app = express();
+// const app = express();
 
 dotenv.config();
 const PORT = process.env.PORT || 5000
@@ -14,7 +15,7 @@ app.use(cookieParser())
 app.use(express.json())
 app.use("/api/v1", router)
 
-app.listen(PORT, () => {
+server.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`)
 });
 
